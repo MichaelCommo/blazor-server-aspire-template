@@ -1,0 +1,61 @@
+@page "/account/login"
+@layout Project.Web.Components.Layout.LoginLayout
+@using Microsoft.AspNetCore.Identity
+@using Project.Data.Entities
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+
+<PageTitle>Login</PageTitle>
+
+<div class="login-page">
+    <div class="login-card">
+        <h2 class="login-title mb-4">App Template</h2>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger mb-3">@_errorMessage</div>
+        }
+
+        <EditForm Model="Input" method="post" OnValidSubmit="HandleLogin" FormName="login">
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <InputText class="form-control" @bind-Value="Input.Email" type="email" placeholder="you@example.com" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <InputText class="form-control" @bind-Value="Input.Password" type="password" placeholder="Enter your password" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Sign In</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? _errorMessage;
+
+    [SupplyParameterFromForm]
+    private LoginInput Input { get; set; } = null!;
+
+    protected override void OnInitialized() => Input ??= new();
+
+    private async Task HandleLogin()
+    {
+        var result = await SignInManager.PasswordSignInAsync(
+            Input.Email, Input.Password, isPersistent: true, lockoutOnFailure: false);
+
+        if (result.Succeeded)
+        {
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            _errorMessage = "Invalid email or password.";
+        }
+    }
+
+    private sealed class LoginInput
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}

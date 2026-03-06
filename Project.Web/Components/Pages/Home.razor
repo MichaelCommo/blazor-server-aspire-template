@@ -1,0 +1,168 @@
+@page "/"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@implements IDisposable
+@using Microsoft.EntityFrameworkCore
+@using Project.Data
+@inject IServiceProvider ServiceProvider
+@inject IHttpClientFactory HttpClientFactory
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="container mt-4" style="max-width: 700px;">
+    <h2>Dashboard</h2>
+
+    <div class="row g-3">
+        @* ── Card 1: Service discovery (HTTP call to worker API) ── *@
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><strong>Worker Status</strong> <small class="text-muted">via service discovery</small></div>
+                <div class="card-body">
+                    @if (_apiLoading)
+                    {
+                        <p class="mb-0"><em>Checking worker status...</em></p>
+                    }
+                    else if (_apiError != null)
+                    {
+                        <div class="alert alert-danger mb-0">
+                            <strong>Cannot reach worker:</strong> @_apiError
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mb-0">
+                            Worker is <strong>@_apiStatus</strong>.
+                            <br />
+                            <small class="text-muted">Responded at: @_apiTimestamp?.ToString("u")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* ── Card 2: Database (shared PostgreSQL table) ── *@
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><strong>Worker Heartbeats</strong> <small class="text-muted">via shared database</small></div>
+                <div class="card-body">
+                    @if (_dbLoading)
+                    {
+                        <p class="mb-0"><em>Loading heartbeat data...</em></p>
+                    }
+                    else if (_heartbeatCount == 0)
+                    {
+                        <div class="alert alert-warning mb-0">
+                            No heartbeats recorded yet. Is the worker running?
+                        </div>
+                    }
+                    else if (_isStale)
+                    {
+                        <div class="alert alert-warning mb-0">
+                            Worker appears <strong>offline</strong> — last heartbeat was @FormatAge(_lastHeartbeat) ago.
+                            <br />
+                            <small class="text-muted">Total heartbeats: @_heartbeatCount</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mb-0">
+                            Worker is <strong>active</strong>.
+                            <br />
+                            <small class="text-muted">
+                                Total heartbeats: @_heartbeatCount
+                                &middot; Last heartbeat: @_lastHeartbeat?.ToString("u")
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // ── Service discovery state ──
+    private bool _apiLoading = true;
+    private string? _apiStatus;
+    private DateTime? _apiTimestamp;
+    private string? _apiError;
+
+    // ── Database state ──
+    private bool _dbLoading = true;
+    private int _heartbeatCount;
+    private DateTime? _lastHeartbeat;
+    private bool _isStale;
+
+    private Timer? _pollTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAll();
+        _pollTimer = new Timer(async _ =>
+        {
+            await RefreshAll();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+    }
+
+    private async Task RefreshAll()
+    {
+        await Task.WhenAll(RefreshApi(), RefreshDb());
+    }
+
+    private async Task RefreshApi()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("Worker");
+            var response = await client.GetFromJsonAsync<WorkerStatus>("/api/status");
+            if (response != null)
+            {
+                _apiStatus = response.Status;
+                _apiTimestamp = response.Timestamp;
+            }
+            _apiError = null;
+        }
+        catch (Exception ex)
+        {
+            _apiError = ex.Message;
+        }
+        _apiLoading = false;
+    }
+
+    private async Task RefreshDb()
+    {
+        try
+        {
+            using var scope = ServiceProvider.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            _heartbeatCount = await db.WorkerHeartbeats.CountAsync();
+            _lastHeartbeat = await db.WorkerHeartbeats
+                .OrderByDescending(h => h.Timestamp)
+                .Select(h => (DateTime?)h.Timestamp)
+                .FirstOrDefaultAsync();
+
+            _isStale = _lastHeartbeat == null
+                || (DateTime.UtcNow - _lastHeartbeat.Value).TotalSeconds > 30;
+        }
+        catch
+        {
+            // DB read failed — leave previous state
+        }
+        _dbLoading = false;
+    }
+
+    private record WorkerStatus(string Status, DateTime Timestamp);
+
+    private static string FormatAge(DateTime? timestamp)
+    {
+        if (timestamp == null) return "unknown";
+        var age = DateTime.UtcNow - timestamp.Value;
+        if (age.TotalMinutes < 1) return $"{(int)age.TotalSeconds}s";
+        if (age.TotalHours < 1) return $"{(int)age.TotalMinutes}m";
+        return $"{(int)age.TotalHours}h";
+    }
+
+    public void Dispose() => _pollTimer?.Dispose();
+}

@@ -1,0 +1,40 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <header class="page-header px-3">
+        <a class="navbar-brand" href="">
+            <span class="brand-text">App Template</span>
+        </a>
+        <button class="navbar-toggler" onclick="sidebarInterop.toggleMobileNav()" title="Navigation menu"></button>
+        <AuthorizeView>
+            <Authorized>
+                <form method="post" action="/account/logout" data-enhance="false" class="logout-form">
+                    <AntiforgeryToken />
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </Authorized>
+        </AuthorizeView>
+    </header>
+
+    <div class="page-body">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+</div>
+
+<footer class="app-footer">
+    &copy; 2026 App Template
+</footer>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

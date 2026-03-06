@@ -1,0 +1,33 @@
+<div class="sidebar-content">
+    <div class="nav-scrollable" onclick="sidebarInterop.closeMobileNav()">
+        <nav class="nav flex-column">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-label">Home</span>
+                </NavLink>
+            </div>
+
+            <div class="nav-item nav-item-toggle px-3">
+                <button class="nav-link sidebar-toggle" onclick="event.stopPropagation(); sidebarInterop.toggle();" title="Toggle sidebar">
+                    <span class="bi bi-chevron-toggle" aria-hidden="true"></span>
+                    <span class="nav-label"></span>
+                </button>
+            </div>
+        </nav>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-logout px-3">
+                    <form method="post" action="/account/logout" data-enhance="false">
+                        <AntiforgeryToken />
+                        <button type="submit" class="nav-logout-btn">
+                            <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span>
+                            <span class="nav-label">Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</div>
