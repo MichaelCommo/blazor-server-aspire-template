@@ -41,7 +41,7 @@ In order of priority:
 ## Project Structure
 
 ```
-Project.sln
+Project.slnx
 ├── Project.AppHost/          (Aspire orchestrator — PostgreSQL + projects)
 ├── Project.Worker/           (Worker Service — BackgroundService + minimal API)
 │   ├── Project.ServiceDefaults
@@ -53,13 +53,14 @@ Project.sln
 └── Project.ServiceDefaults/  (Aspire shared config — telemetry, discovery, health)
 ```
 
-## MS DI Patterns
+## DI Conventions
 
-Key patterns to enforce:
-- Clients that implement multiple interfaces register the concrete type once, then forward via `sp.GetRequiredService<Concrete>()` cast
-- Caching decorators use keyed DI: inner service registered with key `"Inner"`, default resolution returns the decorator
-- Prefer singleton lifetime for stateful clients that require initialization
-- Extension methods per project for DI wiring (e.g. `AddMyServices()`)
+- All registration happens in each project's `Program.cs` via `Microsoft.Extensions.DependencyInjection`.
+- `AppDbContext` is registered with `UseNpgsql` in both `Project.Web` and `Project.Worker`; the connection string name is `appdb`, supplied by Aspire.
+- Long-running work is a `BackgroundService` registered with `AddHostedService`.
+- Cross-service HTTP uses named `HttpClient` registrations resolved through Aspire service discovery (`https+http://<resource-name>`), never hardcoded URLs.
+- Shared telemetry, health checks, and service discovery live in `Project.ServiceDefaults`; add cross-cutting infrastructure there rather than duplicating it per project.
+- Once a project accumulates several registrations, extract them into an `AddXxx()` extension method rather than growing `Program.cs`.
 
 ## Working Style
 

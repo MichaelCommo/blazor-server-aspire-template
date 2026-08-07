@@ -1,6 +1,6 @@
 # .NET Aspire App Template
 
-Skip the boilerplate. This template gives you a fully wired .NET 9 application with authentication, a database, a background worker, and observability — so you can jump straight to building features.
+Skip the boilerplate. This template gives you a fully wired .NET 10 application with authentication, a database, a background worker, and observability — so you can jump straight to building features.
 
 ## What You Get
 
@@ -13,7 +13,7 @@ Skip the boilerplate. This template gives you a fully wired .NET 9 application w
 
 ## Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Aspire uses it to run PostgreSQL)
 - **Trust the .NET HTTPS dev certificate** (one-time setup):
   ```bash
@@ -26,7 +26,7 @@ Make sure Docker is running, then:
 
 ```bash
 # Build
-dotnet build Project.sln
+dotnet build Project.slnx
 
 # Run the full stack via Aspire
 dotnet run --project Project.AppHost/Project.AppHost.csproj
@@ -55,7 +55,7 @@ Change these before deploying anywhere real.
 ## Project Structure
 
 ```
-Project.sln
+Project.slnx
 ├── Project.AppHost/          Aspire orchestrator (PostgreSQL + services)
 ├── Project.Web/              Blazor Server (login, dashboard, layout)
 ├── Project.Worker/           BackgroundService + status API
