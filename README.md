@@ -6,7 +6,7 @@ Skip the boilerplate. This template gives you a fully wired .NET 10 application 
 
 - **Aspire orchestration** — PostgreSQL container, service discovery between services, health checks, OpenTelemetry tracing and metrics
 - **Blazor Server web app** — responsive sidebar layout, Bootstrap 5, interactive dashboard
-- **Authentication** — ASP.NET Identity with cookie auth, invite-only (no public registration), admin account seeded from your own configured credentials on first startup, with account lockout and login rate limiting
+- **Authentication** — ASP.NET Identity with cookie auth, invite-only (no public registration), admin account seeded from your own configured credentials on first startup
 - **EF Core + PostgreSQL** — Identity tables, custom entities, automatic migrations on startup
 - **Background Worker** — a `BackgroundService` that writes heartbeat records every 10 seconds, plus a status API endpoint
 - **Two integration patterns** — the dashboard shows service discovery (HTTP call to Worker API) and shared database access (reading the same table Worker writes to) side by side
