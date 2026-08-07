@@ -51,9 +51,11 @@
         {
             // One message for every failure mode. IsLockedOut is only ever true for
             // an account that exists, so branching on it here would let an attacker
-            // enumerate registered emails.
-            _errorMessage = "Invalid email or password, or the account is "
-                          + "temporarily locked after too many failed attempts.";
+            // enumerate registered emails. The second sentence states the policy
+            // rather than this account's state, so it stays accurate on the first
+            // failure and on the one that actually trips the lockout.
+            _errorMessage = "Invalid email or password. Too many failed attempts "
+                          + "will temporarily lock the account.";
         }
     }
 
