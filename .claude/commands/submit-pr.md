@@ -7,7 +7,7 @@ Submit the current work as a pull request: $ARGUMENTS
 2. Waited for the user to confirm the feature works in their browser/IDE
 3. Received an explicit go-ahead (e.g. "looks good", "ship it", "submit the PR")
 
-If the user has NOT confirmed, **stop immediately** and ask them to test first. Playwright testing by Claude is not a substitute for user verification.
+If the user has NOT confirmed, **stop immediately** and ask them to test first. A clean build is not a substitute for user verification.
 
 ## Steps
 
@@ -36,18 +36,17 @@ Follow these steps in order. Do not skip any.
 
 Before staging anything, run these checks. If ANY fail, **stop and tell the user** — do NOT proceed.
 
-- **No secrets**: Ensure no `.env`, `appsettings.json`, credentials, or API keys are being staged.
-- **No Playwright screenshots**: Delete any `.png` or `.jpeg` files in the repo root that were created by Playwright MCP during review. Do NOT delete files under `wwwroot/` — those are real assets.
-- **Build passes**: Run `dotnet build Project.sln` and confirm 0 errors.
+- **No secrets**: Ensure no `.env` files, credentials, connection strings, or API keys are being staged. `Project.Worker/appsettings.json` is gitignored for this reason — never force-add it.
+- **No stray artifacts**: Delete any screenshots or scratch files left in the repo root during review. Do NOT delete files under `wwwroot/` — those are real assets.
+- **Build passes**: Run `dotnet build Project.slnx` and confirm 0 errors.
 
 ### 5. Documentation review
 
 Before staging, check whether any project documentation needs updating to reflect the changes in this PR. Review each of the following files and update them if they are stale or incomplete:
 
 - **`CLAUDE.md`** — project dependency graph, DI section, architecture sections, configuration section. If you added/removed projects, changed DI wiring, modified auth flow, or altered how config works, update the relevant sections.
-- **`README.md`** (if it exists) — project description, setup instructions, prerequisites. If the PR changes how to build, run, or configure the app, update accordingly.
-- **`TODO.md`** — mark completed items, update status of in-progress items, add new items if the PR creates follow-up work.
-- **Agent files (`.claude/agents/*.md`)** — if the PR changes project structure, DI patterns, file locations, or conventions that agents reference, update the affected agent files so they don't give stale guidance.
+- **`README.md`** — project description, setup instructions, prerequisites. If the PR changes how to build, run, or configure the app, update accordingly.
+- **Agent files (`.claude/agents/*.md`)** — if the PR changes project structure, DI patterns, layout markup, CSS class names, or file locations that agents reference, update the affected agent files so they don't give stale guidance.
 
 Only make changes that are directly necessitated by the code changes in this PR. Do not speculatively rewrite documentation.
 
@@ -65,7 +64,7 @@ Only make changes that are directly necessitated by the code changes in this PR.
 - If there are multiple logical changes, consider splitting into multiple commits
 - Always include the co-author trailer:
   ```
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  Co-Authored-By: Claude <noreply@anthropic.com>
   ```
 
 ### 8. Push the branch

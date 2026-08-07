@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Project.AppHost/Project.AppHost.csproj" />
+  <Project Path="Project.Data/Project.Data.csproj" />
+  <Project Path="Project.ServiceDefaults/Project.ServiceDefaults.csproj" />
+  <Project Path="Project.Web/Project.Web.csproj" />
+  <Project Path="Project.Worker/Project.Worker.csproj" />
+</Solution>

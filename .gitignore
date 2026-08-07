@@ -14,9 +14,6 @@
 .DS_Store
 .claude/settings.local.json
 
-# Worker appsettings.json may contain secrets — keep it out of source control
-Project.Worker/appsettings.json
-
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

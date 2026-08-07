@@ -8,6 +8,7 @@ namespace Project.Web;
 public class SeedDataService(
     IServiceProvider serviceProvider,
     IConfiguration configuration,
+    IHostEnvironment environment,
     ILogger<SeedDataService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -56,7 +57,21 @@ public class SeedDataService(
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
-            logger.LogWarning("No SeedUser configured in appsettings.json. Skipping user seed.");
+            // The user table is empty, so skipping the seed leaves the app with no
+            // way to sign in. Tolerable while developing; outside Development it is
+            // a misconfiguration worth failing loudly on.
+            if (!environment.IsDevelopment())
+            {
+                throw new InvalidOperationException(
+                    "No users exist and SeedUser:Email / SeedUser:Password are not configured. " +
+                    "Supply them via user secrets or the SeedUser__Email / SeedUser__Password " +
+                    "environment variables. Do not commit them to appsettings.json.");
+            }
+
+            logger.LogWarning(
+                "No SeedUser configured, so no user was created and there is no way to sign in. " +
+                "Set it with: dotnet user-secrets set \"SeedUser:Email\" \"you@example.com\" " +
+                "--project Project.Web");
             return;
         }
 
