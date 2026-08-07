@@ -1,0 +1,23 @@
+# Normalize line endings so they can't drift per-machine or per-tool.
+# Git stores text as LF and checks out native line endings on each platform.
+# Without this, a tool that rewrites a file with different endings produces a
+# whole-file diff that hides the real change.
+* text=auto
+
+# Files that must stay LF regardless of platform
+*.sh text eol=lf
+
+# Binary assets — never touch these
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.dll binary
+*.exe binary
+*.pdb binary

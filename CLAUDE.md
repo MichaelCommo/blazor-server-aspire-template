@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Always get explicit user confirmation before committing or creating a PR.** After making code changes, ask the user to test in their browser/IDE. Wait for their explicit go-ahead (e.g. "looks good, submit it") before running `/submit-pr` or creating any git commits. A clean build is not evidence that a feature works — do not assume changes are ready just because automated checks pass.
 
+**Approval is per-commit and never standing.** Being told to commit once does not authorize the next commit, and neither does completing a task that was asked for. This applies equally to pushing, opening PRs, and rewriting history. Do the work, stop at the staging boundary, report what changed, and ask again.
+
 ## Build & Run Commands
 
 ```bash
