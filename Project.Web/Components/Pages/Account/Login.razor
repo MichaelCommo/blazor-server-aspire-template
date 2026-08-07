@@ -41,7 +41,7 @@
     private async Task HandleLogin()
     {
         var result = await SignInManager.PasswordSignInAsync(
-            Input.Email, Input.Password, isPersistent: true, lockoutOnFailure: false);
+            Input.Email, Input.Password, isPersistent: true, lockoutOnFailure: true);
 
         if (result.Succeeded)
         {
@@ -49,7 +49,11 @@
         }
         else
         {
-            _errorMessage = "Invalid email or password.";
+            // One message for every failure mode. IsLockedOut is only ever true for
+            // an account that exists, so branching on it here would let an attacker
+            // enumerate registered emails.
+            _errorMessage = "Invalid email or password, or the account is "
+                          + "temporarily locked after too many failed attempts.";
         }
     }
 

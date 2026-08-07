@@ -19,6 +19,11 @@ Skip the boilerplate. This template gives you a fully wired .NET 10 application 
   ```bash
   dotnet dev-certs https --trust
   ```
+- **Set the seed admin credentials** — there is no registration page, so this is the only way in. They are deliberately blank in `appsettings.json`; set them via user secrets so they stay out of source control:
+  ```bash
+  dotnet user-secrets set "SeedUser:Email" "you@example.com" --project Project.Web
+  ```
+  Set `SeedUser:Password` the same way. The account is created on first startup, only while the user table is empty.
 
 ## Quick Start
 

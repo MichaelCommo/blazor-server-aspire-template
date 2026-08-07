@@ -66,6 +66,16 @@ docker volume ls --filter name=postgres --format '{{.Name}}' | xargs -r docker v
 
 Nothing sequences the Worker behind the Web project's migration step — both only `WaitFor(postgres)`, which signals connection readiness, not schema readiness. On a database with no schema yet, the Worker's first heartbeat write fails with `42P01 relation does not exist`, logs two EF errors plus a warning, and succeeds on its next 10-second cycle. Web logs one matching error from `MigrateAsync` probing `__EFMigrationsHistory`. This is expected on a first run against an empty volume and clears on subsequent runs.
 
-**Authentication:** ASP.NET Identity with cookie auth. Invite-only — no registration page. A seed user is created on first startup from `Project.Web/appsettings.json` (`SeedUser:Email` / `SeedUser:Password`); `SeedDataService` skips seeding and logs a warning if the section is absent. Login is static SSR (required for cookie operations; interactive Blazor Server runs over SignalR which can't set cookies). Logout is a minimal API `POST /account/logout` in `Project.Web/Program.cs`, not a Razor page.
+**Authentication:** ASP.NET Identity with cookie auth. Invite-only — no registration page. Login is static SSR (required for cookie operations; interactive Blazor Server runs over SignalR which can't set cookies). Logout is a minimal API `POST /account/logout` in `Project.Web/Program.cs`, not a Razor page.
+
+**Seed user:** `SeedDataService` creates one admin account, and only when the user table is empty. `SeedUser:Email` / `SeedUser:Password` are intentionally blank in `appsettings.json` — **never commit real values there.** Supply them out of source control:
+
+```bash
+dotnet user-secrets set "SeedUser:Email" "you@example.com" --project Project.Web
+```
+
+Set the password the same way (or via `SeedUser__Email` / `SeedUser__Password` environment variables). With nothing configured, Development logs a warning and creates no user — the app runs but nobody can sign in. Outside Development, startup throws instead, so a deployment can't silently come up unreachable.
+
+**Brute-force protection:** login uses `lockoutOnFailure: true` with Identity lockout at 5 failed attempts / 15 minutes, plus an IP-partitioned fixed-window rate limiter of 5 POSTs per minute scoped to `/account/login`. The limiter deliberately matches only that path so it never throttles the Blazor SignalR circuit or static assets. The login form returns one message for every failure mode — branching on `IsLockedOut` would leak which emails are registered.
 
 **Service Discovery:** The Web project discovers the Worker via Aspire service discovery (`https+http://worker`). The dashboard demonstrates two integration patterns side by side: (1) HTTP call to the worker's `/api/status` endpoint via service discovery, and (2) direct database query of the `WorkerHeartbeats` table. Both poll every 5 seconds.
